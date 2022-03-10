@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _type: 6
   _chance: 5
-  _prefab: {fileID: -4740326043606663868, guid: 2ad9c46fc1b40fe41a33f846979201dc, type: 3}
+  _prefab: {fileID: 6828140369703423751, guid: 2ad9c46fc1b40fe41a33f846979201dc, type: 3}

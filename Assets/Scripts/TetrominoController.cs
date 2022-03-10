@@ -1,22 +1,26 @@
 using System;
 using UnityEngine;
 
-public sealed class TetrominoController : MonoBehaviour
+public sealed class TetrominoController
 {
     public event Action OnLandedEvent;
 
     private float _nextDropTime;
+    private Transform _transform;
+    private RectInt _bounds;
 
     public bool IsMoveble { get; private set; } = true;
     public float DropTimeDelay { get; set; } = 1f;
 
-    private void Awake()
+    public TetrominoController(Transform transform, RectInt bounds)
     {
+        _transform = transform;
+        _bounds = bounds;
+        _nextDropTime = Time.time;
         OnLandedEvent += () => IsMoveble = false;
-        OnLandedEvent += () => enabled = false;
     }
 
-    private void Update()
+    public void Update()
     {
         if (!IsMoveble)
         {
@@ -63,10 +67,10 @@ public sealed class TetrominoController : MonoBehaviour
 
     private bool Move(Vector3Int direction)
     {
-        transform.position += direction;
+        _transform.position += direction;
         if (!IsValidPosition())
         {
-            transform.position -= direction;
+            _transform.position -= direction;
             return false;
         }
 
@@ -75,22 +79,22 @@ public sealed class TetrominoController : MonoBehaviour
 
     private void Rotate(Vector3 eulerAngles)
     {
-        transform.Rotate(eulerAngles);
+        _transform.Rotate(eulerAngles);
         if (!IsValidPosition())
         {
-            transform.Rotate(-eulerAngles);
+            _transform.Rotate(-eulerAngles);
         }
     }
 
     private bool IsValidPosition()
     {
-        foreach (Transform block in transform)
+        foreach (Transform block in _transform)
         {
             int roundedX = Mathf.RoundToInt(block.transform.position.x);
             int roundedY = Mathf.RoundToInt(block.transform.position.y);
             Vector2Int position = new Vector2Int(roundedX, roundedY);
 
-            if (!Board.Bounds.Contains(position))
+            if (!_bounds.Contains(position))
             {
                 return false;
             }

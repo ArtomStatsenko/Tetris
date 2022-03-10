@@ -1,11 +1,12 @@
 ﻿using UnityEngine;
 
+[System.Serializable]
 public sealed class Board
 {
-    public const int Width = 10;
-    public const int Height = 20;
+    public int Width = 10;
+    public int Height = 20;
 
-    public static RectInt Bounds
+    public RectInt Bounds
     {
         get
         {

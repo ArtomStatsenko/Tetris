@@ -5,9 +5,9 @@ public sealed class TetrominoData : ScriptableObject
 {
     [SerializeField] private TetrominoType _type;
     [SerializeField] private int _chance;
-    [SerializeField] private TetrominoController _prefab;
+    [SerializeField] private TetrominoView _prefab;
 
     public TetrominoType Type => _type;
     public int Chance => _chance;
-    public TetrominoController Prefab => _prefab;
+    public TetrominoView Prefab => _prefab;
 }
