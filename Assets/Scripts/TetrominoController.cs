@@ -3,26 +3,40 @@ using UnityEngine;
 
 public sealed class TetrominoController
 {
-    public event Action OnLandedEvent;
+    public event Action OnLandedEvent; 
+    public event Action OnGameOverEvent;
 
     private float _nextDropTime;
     private Transform _transform;
     private RectInt _bounds;
+    private Transform[,] _grid;
+    private bool _isMoveble;
+    private float _dropTimeDelay;
 
-    public bool IsMoveble { get; private set; } = true;
-    public float DropTimeDelay { get; set; } = 1f;
-
-    public TetrominoController(Transform transform, RectInt bounds)
+    public TetrominoController(Transform transform, RectInt bounds, Transform[,] grid, float dropTimeDelay)
     {
         _transform = transform;
         _bounds = bounds;
+        _grid = grid;
+        _dropTimeDelay = dropTimeDelay;
+    }
+
+    public void Start()
+    {
         _nextDropTime = Time.time;
-        OnLandedEvent += () => IsMoveble = false;
+        _isMoveble = true;
+
+        OnLandedEvent += () => _isMoveble = false;
+
+        if (!IsValidPosition())
+        {
+            OnGameOverEvent?.Invoke();
+        }
     }
 
     public void Update()
     {
-        if (!IsMoveble)
+        if (!_isMoveble)
         {
             return;
         }
@@ -56,7 +70,7 @@ public sealed class TetrominoController
         {
             if (Move(Vector3Int.down))
             {
-                _nextDropTime += DropTimeDelay;
+                _nextDropTime += _dropTimeDelay;
             }
             else
             {
@@ -98,9 +112,35 @@ public sealed class TetrominoController
             {
                 return false;
             }
+
+            int gridIndexX = roundedX - _bounds.min.x;
+            int gridIndexY = roundedY - _bounds.min.y;
+
+            if (_grid[gridIndexX, gridIndexY] != null)
+            {
+                return false;
+            }
         }
 
         return true;
+    }
+
+    public void AddToGrid(Transform[,] grid)
+    {
+        foreach (Transform block in _transform)
+        {
+            int roundedX = Mathf.RoundToInt(block.transform.position.x);
+            int roundedY = Mathf.RoundToInt(block.transform.position.y);
+            Vector2Int position = new Vector2Int(roundedX, roundedY);
+
+            if (_bounds.Contains(position))
+            {
+                int gridIndexX = roundedX - _bounds.min.x;
+                int gridIndexY = roundedY - _bounds.min.y;
+
+                grid[gridIndexX, gridIndexY] = block;
+            }
+        }
     }
 
     private void HardDrop()

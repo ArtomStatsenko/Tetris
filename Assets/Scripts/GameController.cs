@@ -10,13 +10,15 @@ public sealed class GameController : MonoBehaviour
     private TetrominoData[] _tetrominoes;
     private Board _board;
     private float _OIpositionOffset = 0.5f;
+    private Transform[,] _grid;
 
     private void Start()
     {
         _tetrominoes = _gameData.Tetrominoes;
         _board = _gameData.Board;
+        _grid = new Transform[_board.Width, _board.Height];
 
-        SpawnTetramino();
+        CreateTetromino();
     }
 
     private void Update()
@@ -24,7 +26,21 @@ public sealed class GameController : MonoBehaviour
         _tetrominoController.Update();
     }
 
-    private void SpawnTetramino()
+    private void CreateTetromino()
+    {
+        TetrominoView tetromino = NewTetromino();
+        _tetrominoController = new TetrominoController(tetromino.transform, _board.Bounds, _grid, _dropTimeDelay);
+        _tetrominoController.OnLandedEvent += NextStep;
+        _tetrominoController.OnGameOverEvent += GameOver;
+        _tetrominoController.Start();
+    }
+
+    private void GameOver()
+    {
+        Clear();
+    }
+
+    private TetrominoView NewTetromino()
     {
         int index = Random.Range(0, _tetrominoes.Length);
         TetrominoData data = _tetrominoes[index];
@@ -41,10 +57,74 @@ public sealed class GameController : MonoBehaviour
                 break;
         }
 
-        TetrominoView tetromino = Instantiate(data.Prefab, position, Quaternion.identity);
+        return Instantiate(data.Prefab, position, Quaternion.identity);
+    }
 
-        _tetrominoController = new TetrominoController(tetromino.transform, _board.Bounds);
-        _tetrominoController.DropTimeDelay = _dropTimeDelay;
-        _tetrominoController.OnLandedEvent += SpawnTetramino;
+    private void NextStep()
+    {
+        _tetrominoController.AddToGrid(_grid);
+        ClearLines();
+        CreateTetromino();
+    }
+
+    private void ClearLines()
+    {
+        for (int row = _grid.GetUpperBound(1); row >= 0 ; row--)
+        {
+            if (IsLineFull(row))
+            {
+                DeleteLine(row);
+                MoveLinesDown(row);
+            }
+        }
+    }
+
+    private bool IsLineFull(int row)
+    {
+        for (int column = 0; column <= _grid.GetUpperBound(0); column++)
+        {
+            if (_grid[column, row] == null)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void DeleteLine(int row)
+    {
+        for (int column = 0; column <= _grid.GetUpperBound(0); column++)
+        {
+            if (_grid[column, row] != null)
+            {
+                Destroy(_grid[column, row].gameObject);
+                _grid[column, row] = null;
+            }
+        }
+    }
+
+    private void MoveLinesDown(int startRow)
+    {
+        for (int row = startRow; row <= _grid.GetUpperBound(1); row++)
+        {
+            for (int column = 0; column <= _grid.GetUpperBound(0); column++)
+            {
+                if (_grid[column, row] != null)
+                {
+                    _grid[column, row - 1] = _grid[column, row];
+                    _grid[column, row] = null;
+                    _grid[column, row - 1].position += Vector3Int.down;
+                }
+            }
+        }
+    }
+
+    private void Clear()
+    {
+        for (int row = 0; row <= _grid.GetUpperBound(1); row++)
+        {
+            DeleteLine(row);
+        }
     }
 }
