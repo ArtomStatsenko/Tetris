@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7919435436410148502}
   - component: {fileID: 2791089007311849830}
   m_Layer: 0
-  m_Name: Tetromino_Z
+  m_Name: S
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

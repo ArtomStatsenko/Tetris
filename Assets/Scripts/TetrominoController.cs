@@ -1,19 +1,19 @@
 using System;
 using UnityEngine;
 
-public sealed class Tetromino : MonoBehaviour
+public sealed class TetrominoController : MonoBehaviour
 {
     public event Action OnLandedEvent;
-
-    [SerializeField] private float _dropTimeDelay = 1f;
 
     private float _nextDropTime;
 
     public bool IsMoveble { get; private set; } = true;
+    public float DropTimeDelay { get; set; } = 1f;
 
     private void Awake()
     {
         OnLandedEvent += () => IsMoveble = false;
+        OnLandedEvent += () => enabled = false;
     }
 
     private void Update()
@@ -52,7 +52,7 @@ public sealed class Tetromino : MonoBehaviour
         {
             if (Move(Vector3Int.down))
             {
-                _nextDropTime += _dropTimeDelay;
+                _nextDropTime += DropTimeDelay;
             }
             else
             {
@@ -88,8 +88,9 @@ public sealed class Tetromino : MonoBehaviour
         {
             int roundedX = Mathf.RoundToInt(block.transform.position.x);
             int roundedY = Mathf.RoundToInt(block.transform.position.y);
+            Vector2Int position = new Vector2Int(roundedX, roundedY);
 
-            if (roundedX < Board.Bounds.xMin || roundedX >= Board.Bounds.xMax || roundedY < Board.Bounds.yMin)
+            if (!Board.Bounds.Contains(position))
             {
                 return false;
             }

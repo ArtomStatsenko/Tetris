@@ -5,13 +5,13 @@ public sealed class Board
     public const int Width = 10;
     public const int Height = 20;
 
-    public static BoundsInt Bounds
+    public static RectInt Bounds
     {
         get
         {
-            Vector3Int minPosition = new Vector3Int(-Width / 2, -Height / 2, 0);
-            Vector3Int size = new Vector3Int(Width, Height, 0);            
-            return new BoundsInt(minPosition, size);
+            Vector2Int minPosition = new Vector2Int(-Width / 2, -Height / 2);
+            Vector2Int size = new Vector2Int(Width, Height);
+            return new RectInt(minPosition, size);
         }
     }
 }
