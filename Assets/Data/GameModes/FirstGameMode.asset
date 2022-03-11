@@ -17,10 +17,17 @@ MonoBehaviour:
     Width: 10
     Height: 20
   _tetrominoes:
-  - {fileID: 11400000, guid: a22fdafd88a8d2447b2b1d0995eb078b, type: 2}
-  - {fileID: 11400000, guid: 8318a889fcb3b7742b83a8774852607b, type: 2}
-  - {fileID: 11400000, guid: 9345f1585f688f74fb823151bc8e5594, type: 2}
-  - {fileID: 11400000, guid: 7eb76ec15f323d749913e85aed11055e, type: 2}
-  - {fileID: 11400000, guid: 959dde18585fa784e8e729f588157c03, type: 2}
-  - {fileID: 11400000, guid: 589da1726507e784d8ee4f53e6896c46, type: 2}
-  - {fileID: 11400000, guid: f8fe0fbc21e0b1a4e8b1cce53f503a99, type: 2}
+  - Data: {fileID: 11400000, guid: a22fdafd88a8d2447b2b1d0995eb078b, type: 2}
+    DropChance: 10
+  - Data: {fileID: 11400000, guid: 8318a889fcb3b7742b83a8774852607b, type: 2}
+    DropChance: 15
+  - Data: {fileID: 11400000, guid: 9345f1585f688f74fb823151bc8e5594, type: 2}
+    DropChance: 15
+  - Data: {fileID: 11400000, guid: 7eb76ec15f323d749913e85aed11055e, type: 2}
+    DropChance: 10
+  - Data: {fileID: 11400000, guid: 959dde18585fa784e8e729f588157c03, type: 2}
+    DropChance: 15
+  - Data: {fileID: 11400000, guid: 589da1726507e784d8ee4f53e6896c46, type: 2}
+    DropChance: 20
+  - Data: {fileID: 11400000, guid: f8fe0fbc21e0b1a4e8b1cce53f503a99, type: 2}
+    DropChance: 15
