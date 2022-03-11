@@ -3,17 +3,16 @@
 public sealed class GameController : MonoBehaviour
 {
     [SerializeField] private GameData _gameData;
+    [SerializeField] private SpriteRenderer _boardSpriteRenderer;
     [SerializeField] private Vector3 _spawnPosition;
     [SerializeField] private float _dropTimeDelay = 1f;
-    [SerializeField] private SpriteRenderer _boardSpriteRenderer;
 
+    private Transform[,] _grid;
     private TetrominoController _tetrominoController;
     private TetrominoDropChance[] _tetrominoes;
     private Board _board;
-    private float _OIpositionOffset = 0.5f;
-    private Transform[,] _grid;
-    private GhostTetrominoController _ghostController;
     private int[] _dropChances;
+    private float _OIpositionOffset = 0.5f;
 
     private void Start()
     {
@@ -31,11 +30,6 @@ public sealed class GameController : MonoBehaviour
         _tetrominoController.Update();
     }
 
-    private void LateUpdate()
-    {
-        //_ghostController.LateUpdate();
-    }
-
     private void CreateTetromino()
     {
         TetrominoData data = GetTetrominoData();
@@ -44,9 +38,6 @@ public sealed class GameController : MonoBehaviour
         _tetrominoController.OnLandedEvent += NextStep;
         _tetrominoController.OnGameOverEvent += GameOver;
         _tetrominoController.Start();
-
-        //TetrominoView ghost = NewTetromino(data);
-        //_ghostController = new GhostTetrominoController(ghost.transform, _board.Bounds, _grid, tetromino.transform);
     }
 
     private TetrominoData GetTetrominoData()
@@ -118,14 +109,7 @@ public sealed class GameController : MonoBehaviour
         {
             if (_grid[column, row] != null)
             {
-                Transform parent = _grid[column, row].parent;
                 Destroy(_grid[column, row].gameObject);
-
-                if (parent.childCount == 0)
-                {
-                    Destroy(_grid[column, row].parent.gameObject);
-                }
-
                 _grid[column, row] = null;
             }
         }

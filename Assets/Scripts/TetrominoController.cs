@@ -141,6 +141,9 @@ public sealed class TetrominoController
                 grid[gridIndexX, gridIndexY] = block;
             }
         }
+
+        _transform.DetachChildren();
+        UnityEngine.Object.Destroy(_transform.gameObject);
     }
 
     private void HardDrop()
