@@ -9,6 +9,7 @@ public sealed class GameController : MonoBehaviour
 
     private Transform[,] _grid;
     private TetrominoController _tetrominoController;
+    private TetrominoController _cloneController;
     private TetrominoDropChance[] _tetrominoes;
     private Board _board;
     private int[] _dropChances;
@@ -28,16 +29,35 @@ public sealed class GameController : MonoBehaviour
     private void Update()
     {
         _tetrominoController.Update();
+
+        if (_gameData.Mode == GameMode.Second)
+        {
+            _cloneController.Update();
+        }
     }
 
     private void CreateTetromino()
     {
         TetrominoData data = GetTetrominoData();
         TetrominoView tetromino = NewTetromino(data);
-        _tetrominoController = new TetrominoController(tetromino.transform, _board.Bounds, _grid, _dropTimeDelay);
+        _tetrominoController = new TetrominoController(tetromino.transform, _board.Bounds, _grid, _dropTimeDelay, _gameData.Mode);
         _tetrominoController.OnLandedEvent += NextStep;
         _tetrominoController.OnGameOverEvent += GameOver;
-        _tetrominoController.Start();
+        _tetrominoController.Start(tetromino.transform.position.x);
+
+        if (_gameData.Mode == GameMode.Second)
+        {
+            CreateClone(data);
+        }
+    }
+
+    private void CreateClone(TetrominoData data)
+    {
+        TetrominoView tetromino = NewTetromino(data);
+        float startPositionX = tetromino.transform.position.x;
+        tetromino.transform.position = tetromino.transform.position.Change(x: startPositionX + _board.Width);
+        _cloneController = new TetrominoController(tetromino.transform, _board.Bounds, _grid, _dropTimeDelay, _gameData.Mode);
+        _cloneController.Start(startPositionX);
     }
 
     private TetrominoData GetTetrominoData()
@@ -74,6 +94,12 @@ public sealed class GameController : MonoBehaviour
     private void NextStep()
     {
         _tetrominoController.AddToGrid(_grid);
+
+        if (_gameData.Mode == GameMode.Second)
+        {
+            _cloneController.AddToGrid(_grid);
+        }
+
         ClearLines();
         CreateTetromino();
     }

@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-public sealed class TetrominoController
+public sealed class SecondModeTetrominoController
 {
     public event Action OnLandedEvent;
     public event Action OnGameOverEvent;
@@ -16,7 +16,7 @@ public sealed class TetrominoController
     private GameMode _mode;
     private bool _isMoveble;
 
-    public TetrominoController(Transform transform, RectInt bounds, Transform[,] grid, float dropTimeDelay, GameMode mode)
+    public SecondModeTetrominoController(Transform transform, RectInt bounds, Transform[,] grid, float dropTimeDelay, GameMode mode)
     {
         _transform = transform;
         _bounds = bounds;
