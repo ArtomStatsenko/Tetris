@@ -20,7 +20,7 @@ public sealed class SpawnController
         _grid = grid;
     }
 
-    public ITetrominoController CreateTetromino()
+    public TetrominoController CreateTetromino()
     {
         TetrominoData data = GetTetrominoData();
 

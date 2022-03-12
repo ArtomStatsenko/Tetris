@@ -10,7 +10,7 @@ public sealed class GameController : MonoBehaviour
     private Transform[,] _grid;
     private BoardController _boardController;
     private SpawnController _spawnController;
-    private ITetrominoController _tetrominoController;
+    private TetrominoController _tetrominoController;
 
     private void Start()
     {

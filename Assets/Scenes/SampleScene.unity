@@ -317,7 +317,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3300c4d077e1964183c57b6f64c205e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _gameData: {fileID: 11400000, guid: d0aa707df6fa3fd4892d66bf685a6917, type: 2}
+  _gameData: {fileID: 11400000, guid: 5769f2ddfb5abc54db812cf6236c6679, type: 2}
   _boardSpriteRenderer: {fileID: 237128731}
   _spawnPosition: {x: 0, y: 7, z: 0}
   _dropTimeDelay: 0.6
