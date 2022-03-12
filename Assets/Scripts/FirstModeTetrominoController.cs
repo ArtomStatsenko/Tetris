@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-public sealed class TetrominoController
+public sealed class FirstModeTetrominoController : ITetrominoController
 {
     public event Action OnLandedEvent;
     public event Action OnGameOverEvent;
@@ -12,24 +12,20 @@ public sealed class TetrominoController
     private RectInt _bounds;
     private float _nextDropTime;
     private float _dropTimeDelay;
-    private float _horizontalOffset;
-    private GameMode _mode;
     private bool _isMoveble;
 
-    public TetrominoController(Transform transform, RectInt bounds, Transform[,] grid, float dropTimeDelay, GameMode mode)
+    public FirstModeTetrominoController(Transform transform, RectInt bounds, Transform[,] grid)
     {
         _transform = transform;
         _bounds = bounds;
         _grid = grid;
-        _dropTimeDelay = dropTimeDelay;
-        _mode = mode;
     }
 
-    public void Start(float startPositionX)
+    public void Start(float dropTimeDelay)
     {
         _nextDropTime = Time.time;
         _isMoveble = true;
-        _horizontalOffset = _bounds.size.x - startPositionX - 1;
+        _dropTimeDelay = dropTimeDelay;
         OnLandedEvent += () => _isMoveble = false;
 
         if (!IsValidPosition())
@@ -83,7 +79,7 @@ public sealed class TetrominoController
         }
     }
 
-    private bool Move(Vector3Int direction)
+    public bool Move(Vector3Int direction)
     {
         _transform.position += direction;
         if (!IsValidPosition())
@@ -92,26 +88,15 @@ public sealed class TetrominoController
             return false;
         }
 
-        if (_mode == GameMode.Second)
-        {
-            SetBlocksEnable();
-            TranslateIfPositionFar();
-        }
-
         return true;
     }
 
-    private void Rotate(Vector3Int eulerAngles)
+    public void Rotate(Vector3Int eulerAngles)
     {
         _transform.Rotate(eulerAngles);
         if (!IsValidPosition())
         {
             _transform.Rotate(-eulerAngles);
-        }
-
-        if (_mode == GameMode.Second)
-        {
-            SetBlocksEnable();
         }
     }
 
@@ -122,30 +107,13 @@ public sealed class TetrominoController
             int roundedX = Mathf.RoundToInt(block.transform.position.x);
             int roundedY = Mathf.RoundToInt(block.transform.position.y);
             Vector2Int position = new Vector2Int(roundedX, roundedY);
-
             int gridIndexX = roundedX - _bounds.min.x;
             int gridIndexY = roundedY - _bounds.min.y;
-
             bool isBlockOnBoard = _bounds.Contains(position);
 
-            if (_mode == GameMode.First)
+            if (!isBlockOnBoard || _grid[gridIndexX, gridIndexY] != null)
             {
-                if (!isBlockOnBoard || _grid[gridIndexX, gridIndexY] != null)
-                {
-                    return false;
-                }
-            }
-            else if (_mode == GameMode.Second)
-            {
-                if (roundedY < _bounds.yMin)
-                {
-                    return false;
-                }
-
-                if (isBlockOnBoard && _grid[gridIndexX, gridIndexY] != null)
-                {
-                    return false;
-                }
+                return false;
             }
         }
 
@@ -167,10 +135,6 @@ public sealed class TetrominoController
 
                 grid[gridIndexX, gridIndexY] = block;
             }
-            else
-            {
-                Object.Destroy(block.gameObject);
-            }
         }
 
         _transform.DetachChildren();
@@ -182,30 +146,6 @@ public sealed class TetrominoController
         while (Move(Vector3Int.down))
         {
             continue;
-        }
-    }
-
-    private void SetBlocksEnable()
-    {
-        foreach (Transform block in _transform)
-        {
-            int roundedX = Mathf.RoundToInt(block.transform.position.x);
-            int roundedY = Mathf.RoundToInt(block.transform.position.y);
-            Vector2Int position = new Vector2Int(roundedX, roundedY);
-            bool isBlockOnBoard = _bounds.Contains(position);
-            block.gameObject.SetActive(isBlockOnBoard);
-        }
-    }
-
-    private void TranslateIfPositionFar()
-    {
-        if (_transform.position.x < -_bounds.size.x)
-        {
-            _transform.position = _transform.position.Change(x: _horizontalOffset);
-        }
-        else if (_transform.position.x > _bounds.size.x)
-        {
-            _transform.position = _transform.position.Change(x: -_horizontalOffset);
         }
     }
 }

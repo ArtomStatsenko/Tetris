@@ -2,37 +2,37 @@
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-public sealed class SecondModeTetrominoController
+public sealed class SecondModeTetrominoController : ITetrominoController
 {
     public event Action OnLandedEvent;
     public event Action OnGameOverEvent;
 
     private Transform[,] _grid;
-    private Transform _transform;
+    private Transform _first;
+    private Transform _second;
     private RectInt _bounds;
     private float _nextDropTime;
     private float _dropTimeDelay;
     private float _horizontalOffset;
-    private GameMode _mode;
     private bool _isMoveble;
 
-    public SecondModeTetrominoController(Transform transform, RectInt bounds, Transform[,] grid, float dropTimeDelay, GameMode mode)
+    public SecondModeTetrominoController(Transform first, Transform second, RectInt bounds, Transform[,] grid)
     {
-        _transform = transform;
+        _first = first;
+        _second = second;
         _bounds = bounds;
         _grid = grid;
-        _dropTimeDelay = dropTimeDelay;
-        _mode = mode;
+        _horizontalOffset = _bounds.size.x - first.position.x - 1;
     }
 
-    public void Start(float startPositionX)
+    public void Start(float dropTimeDelay)
     {
         _nextDropTime = Time.time;
-        _isMoveble = true;
-        _horizontalOffset = _bounds.size.x - startPositionX - 1;
+        _isMoveble = true; 
+        _dropTimeDelay = dropTimeDelay;
         OnLandedEvent += () => _isMoveble = false;
 
-        if (!IsValidPosition())
+        if (!IsValidPosition(_first))
         {
             OnGameOverEvent?.Invoke();
         }
@@ -83,69 +83,59 @@ public sealed class SecondModeTetrominoController
         }
     }
 
-    private bool Move(Vector3Int direction)
+    public bool Move(Vector3Int direction)
     {
-        _transform.position += direction;
-        if (!IsValidPosition())
+        _first.position += direction;
+        _second.position += direction;
+        if (!IsValidPosition(_first) || !IsValidPosition(_second))
         {
-            _transform.position -= direction;
+            _first.position -= direction; 
+            _second.position -= direction;
             return false;
         }
 
-        if (_mode == GameMode.Second)
-        {
-            SetBlocksEnable();
-            TranslateIfPositionFar();
-        }
+        SetBlocksEnable(_first);
+        SetBlocksEnable(_second);
+
+        TranslateIfPositionFar(_first);
+        TranslateIfPositionFar(_second);
 
         return true;
     }
 
-    private void Rotate(Vector3Int eulerAngles)
+    public void Rotate(Vector3Int eulerAngles)
     {
-        _transform.Rotate(eulerAngles);
-        if (!IsValidPosition())
+        _first.Rotate(eulerAngles); 
+        _second.Rotate(eulerAngles);
+        if (!IsValidPosition(_first) || !IsValidPosition(_second))
         {
-            _transform.Rotate(-eulerAngles);
+            _first.Rotate(-eulerAngles);
+            _second.Rotate(-eulerAngles);
         }
 
-        if (_mode == GameMode.Second)
-        {
-            SetBlocksEnable();
-        }
+        SetBlocksEnable(_first);
+        SetBlocksEnable(_second);
     }
 
-    private bool IsValidPosition()
+    private bool IsValidPosition(Transform tetromino)
     {
-        foreach (Transform block in _transform)
+        foreach (Transform block in tetromino)
         {
             int roundedX = Mathf.RoundToInt(block.transform.position.x);
             int roundedY = Mathf.RoundToInt(block.transform.position.y);
             Vector2Int position = new Vector2Int(roundedX, roundedY);
-
             int gridIndexX = roundedX - _bounds.min.x;
             int gridIndexY = roundedY - _bounds.min.y;
-
             bool isBlockOnBoard = _bounds.Contains(position);
 
-            if (_mode == GameMode.First)
+            if (roundedY < _bounds.yMin)
             {
-                if (!isBlockOnBoard || _grid[gridIndexX, gridIndexY] != null)
-                {
-                    return false;
-                }
+                return false;
             }
-            else if (_mode == GameMode.Second)
-            {
-                if (roundedY < _bounds.yMin)
-                {
-                    return false;
-                }
 
-                if (isBlockOnBoard && _grid[gridIndexX, gridIndexY] != null)
-                {
-                    return false;
-                }
+            if (isBlockOnBoard && _grid[gridIndexX, gridIndexY] != null)
+            {
+                return false;
             }
         }
 
@@ -154,7 +144,13 @@ public sealed class SecondModeTetrominoController
 
     public void AddToGrid(Transform[,] grid)
     {
-        foreach (Transform block in _transform)
+        AddBlocksToGrid(_first, grid);
+        AddBlocksToGrid(_second, grid);
+    }
+
+    private void AddBlocksToGrid(Transform tetromino , Transform[,] grid)
+    {
+        foreach (Transform block in tetromino)
         {
             int roundedX = Mathf.RoundToInt(block.transform.position.x);
             int roundedY = Mathf.RoundToInt(block.transform.position.y);
@@ -173,8 +169,8 @@ public sealed class SecondModeTetrominoController
             }
         }
 
-        _transform.DetachChildren();
-        Object.Destroy(_transform.gameObject);
+        tetromino.DetachChildren();
+        Object.Destroy(tetromino.gameObject);
     }
 
     private void HardDrop()
@@ -185,9 +181,9 @@ public sealed class SecondModeTetrominoController
         }
     }
 
-    private void SetBlocksEnable()
+    private void SetBlocksEnable(Transform tetromino)
     {
-        foreach (Transform block in _transform)
+        foreach (Transform block in tetromino)
         {
             int roundedX = Mathf.RoundToInt(block.transform.position.x);
             int roundedY = Mathf.RoundToInt(block.transform.position.y);
@@ -197,15 +193,15 @@ public sealed class SecondModeTetrominoController
         }
     }
 
-    private void TranslateIfPositionFar()
+    private void TranslateIfPositionFar(Transform tetromino)
     {
-        if (_transform.position.x < -_bounds.size.x)
+        if (tetromino.position.x < -_bounds.size.x)
         {
-            _transform.position = _transform.position.Change(x: _horizontalOffset);
+            tetromino.position = tetromino.position.Change(x: _horizontalOffset);
         }
-        else if (_transform.position.x > _bounds.size.x)
+        else if (tetromino.position.x > _bounds.size.x)
         {
-            _transform.position = _transform.position.Change(x: -_horizontalOffset);
+            tetromino.position = tetromino.position.Change(x: -_horizontalOffset);
         }
     }
 }
