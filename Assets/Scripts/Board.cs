@@ -15,4 +15,6 @@ public sealed class Board
             return new RectInt(minPosition, size);
         }
     }
+
+    public Vector3 SpawnPosition => new Vector3(0f, (Height / 2) - 3, 0f);
 }

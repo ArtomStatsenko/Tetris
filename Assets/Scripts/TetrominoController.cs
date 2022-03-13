@@ -1,34 +1,33 @@
-using System;
+﻿using System;
 using UnityEngine;
 
-public sealed class TetrominoController
+public abstract class TetrominoController
 {
-    public event Action OnLandedEvent; 
+    public event Action OnLandedEvent;
     public event Action OnGameOverEvent;
 
-    private float _nextDropTime;
-    private Transform _transform;
-    private RectInt _bounds;
     private Transform[,] _grid;
-    private bool _isMoveble;
+    private Transform _tetromino;
+    private RectInt _bounds;
+    private float _nextDropTime;
     private float _dropTimeDelay;
+    private bool _isMoveble;
 
-    public TetrominoController(Transform transform, RectInt bounds, Transform[,] grid, float dropTimeDelay)
+    public TetrominoController(Transform tetromino, RectInt bounds, Transform[,] grid)
     {
-        _transform = transform;
+        _tetromino = tetromino;
         _bounds = bounds;
         _grid = grid;
-        _dropTimeDelay = dropTimeDelay;
     }
 
-    public void Start()
+    public void Start(float dropTimeDelay)
     {
         _nextDropTime = Time.time;
         _isMoveble = true;
-
+        _dropTimeDelay = dropTimeDelay;
         OnLandedEvent += () => _isMoveble = false;
 
-        if (!IsValidPosition())
+        if (!IsValidPosition(_tetromino))
         {
             OnGameOverEvent?.Invoke();
         }
@@ -55,11 +54,11 @@ public sealed class TetrominoController
         }
         else if (Input.GetKeyDown(KeyCode.Q))
         {
-            Rotate(new Vector3(0f, 0f, 90f));
+            Rotate(new Vector3Int(0, 0, 90));
         }
         else if (Input.GetKeyDown(KeyCode.E))
         {
-            Rotate(new Vector3(0f, 0f, -90f));
+            Rotate(new Vector3Int(0, 0, -90));
         }
         else if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -79,44 +78,16 @@ public sealed class TetrominoController
         }
     }
 
-    private bool Move(Vector3Int direction)
+    public bool IsValidPosition(Transform tetromino)
     {
-        _transform.position += direction;
-        if (!IsValidPosition())
-        {
-            _transform.position -= direction;
-            return false;
-        }
-
-        return true;
-    }
-
-    private void Rotate(Vector3 eulerAngles)
-    {
-        _transform.Rotate(eulerAngles);
-        if (!IsValidPosition())
-        {
-            _transform.Rotate(-eulerAngles);
-        }
-    }
-
-    private bool IsValidPosition()
-    {
-        foreach (Transform block in _transform)
+        foreach (Transform block in tetromino)
         {
             int roundedX = Mathf.RoundToInt(block.transform.position.x);
             int roundedY = Mathf.RoundToInt(block.transform.position.y);
             Vector2Int position = new Vector2Int(roundedX, roundedY);
+            bool isBlockOnBoard = _bounds.Contains(position);
 
-            if (!_bounds.Contains(position))
-            {
-                return false;
-            }
-
-            int gridIndexX = roundedX - _bounds.min.x;
-            int gridIndexY = roundedY - _bounds.min.y;
-
-            if (_grid[gridIndexX, gridIndexY] != null)
+            if (!IsPositionFree(roundedX, roundedY, isBlockOnBoard, _grid))
             {
                 return false;
             }
@@ -125,32 +96,19 @@ public sealed class TetrominoController
         return true;
     }
 
-    public void AddToGrid(Transform[,] grid)
-    {
-        foreach (Transform block in _transform)
-        {
-            int roundedX = Mathf.RoundToInt(block.transform.position.x);
-            int roundedY = Mathf.RoundToInt(block.transform.position.y);
-            Vector2Int position = new Vector2Int(roundedX, roundedY);
-
-            if (_bounds.Contains(position))
-            {
-                int gridIndexX = roundedX - _bounds.min.x;
-                int gridIndexY = roundedY - _bounds.min.y;
-
-                grid[gridIndexX, gridIndexY] = block;
-            }
-        }
-
-        _transform.DetachChildren();
-        UnityEngine.Object.Destroy(_transform.gameObject);
-    }
-
-    private void HardDrop()
+    public void HardDrop()
     {
         while (Move(Vector3Int.down))
         {
             continue;
         }
-    }       
+    }
+
+    public abstract bool Move(Vector3Int direction);
+
+    public abstract void Rotate(Vector3Int eulerAngles);
+
+    public abstract bool IsPositionFree(int x, int y, bool isBlockOnBoard, Transform[,] grid);
+
+    public abstract void AddToGrid(Transform[,] grid);
 }
