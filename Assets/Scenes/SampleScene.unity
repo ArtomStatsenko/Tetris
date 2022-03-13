@@ -499,7 +499,6 @@ MonoBehaviour:
   _gameData: {fileID: 11400000, guid: 5769f2ddfb5abc54db812cf6236c6679, type: 2}
   _boardSpriteRenderer: {fileID: 237128731}
   _scoreLabel: {fileID: 282562262}
-  _spawnPosition: {x: 0, y: 7, z: 0}
   _dropTimeDelay: 0.6
 --- !u!4 &647837212
 Transform:
