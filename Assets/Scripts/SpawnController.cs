@@ -2,13 +2,13 @@
 
 public sealed class SpawnController
 {
-    private GameMode _mode;
+    private Transform[,] _grid;
+    private Vector3 _spawnPosition;
+    private TetrominoDropChance[] _tetrominoes;
+    private Board _board;
     private int[] _dropChances;
     private float _OIpositionOffset = 0.5f;
-    private TetrominoDropChance[] _tetrominoes;
-    private Vector3 _spawnPosition;
-    private Board _board;
-    private Transform[,] _grid;
+    private GameMode _mode;
 
     public SpawnController(GameData data, Vector3 spawnPosition, Transform[,] grid)
     {

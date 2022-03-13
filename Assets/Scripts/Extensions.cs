@@ -2,7 +2,7 @@
 
 public static class Extensions
 {
-    public static int LastValue(this int[] array)
+    public static T LastValue<T>(this T[] array)
     {
         return array[array.Length - 1];
     }

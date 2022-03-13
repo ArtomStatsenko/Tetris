@@ -6,14 +6,12 @@ public sealed class SecondModeTetrominoController : TetrominoController
     private Transform _second;
     private RectInt _bounds;
     private float _horizontalOffset;
-    private Transform[,] _grid;
 
-    public SecondModeTetrominoController(Transform first, Transform second, RectInt bounds, Transform[,] grid) : base(first)
+    public SecondModeTetrominoController(Transform first, Transform second, RectInt bounds, Transform[,] grid) : base(first, bounds, grid)
     {
         _first = first;
         _second = second;
         _bounds = bounds;
-        _grid = grid;
         _horizontalOffset = _bounds.size.x - first.position.x - 1;
     }
 
@@ -21,6 +19,7 @@ public sealed class SecondModeTetrominoController : TetrominoController
     {
         _first.position += direction;
         _second.position += direction;
+
         if (!IsValidPosition(_first) || !IsValidPosition(_second))
         {
             _first.position -= direction; 
@@ -48,6 +47,24 @@ public sealed class SecondModeTetrominoController : TetrominoController
 
         SetBlocksEnable(_first);
         SetBlocksEnable(_second);
+    }
+
+    public override bool IsPositionFree(int x, int y, bool isBlockOnBoard, Transform[,] grid)
+    {
+        int indexX = x - _bounds.min.x;
+        int indexY = y - _bounds.min.y;
+
+        if (y < _bounds.yMin)
+        {
+            return false;
+        }
+
+        if (isBlockOnBoard && grid[indexX, indexY] != null)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public override void AddToGrid(Transform[,] grid)
@@ -79,31 +96,6 @@ public sealed class SecondModeTetrominoController : TetrominoController
 
         tetromino.DetachChildren();
         Object.Destroy(tetromino.gameObject);
-    }
-
-    public override bool IsValidPosition(Transform tetromino)
-    {
-        foreach (Transform block in tetromino)
-        {
-            int roundedX = Mathf.RoundToInt(block.transform.position.x);
-            int roundedY = Mathf.RoundToInt(block.transform.position.y);
-            Vector2Int position = new Vector2Int(roundedX, roundedY);
-            int gridIndexX = roundedX - _bounds.min.x;
-            int gridIndexY = roundedY - _bounds.min.y;
-            bool isBlockOnBoard = _bounds.Contains(position);
-
-            if (roundedY < _bounds.yMin)
-            {
-                return false;
-            }
-
-            if (isBlockOnBoard && _grid[gridIndexX, gridIndexY] != null)
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     private void SetBlocksEnable(Transform tetromino)

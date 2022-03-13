@@ -2,21 +2,25 @@
 using UnityEngine;
 
 public abstract class TetrominoController
-{ 
+{
     public event Action OnLandedEvent;
     public event Action OnGameOverEvent;
 
+    private Transform[,] _grid;
     private Transform _tetromino;
+    private RectInt _bounds;
     private float _nextDropTime;
     private float _dropTimeDelay;
     private bool _isMoveble;
 
-    public TetrominoController(Transform tetromino)
+    public TetrominoController(Transform tetromino, RectInt bounds, Transform[,] grid)
     {
         _tetromino = tetromino;
+        _bounds = bounds;
+        _grid = grid;
     }
 
-    public virtual void Start(float dropTimeDelay)
+    public void Start(float dropTimeDelay)
     {
         _nextDropTime = Time.time;
         _isMoveble = true;
@@ -74,13 +78,23 @@ public abstract class TetrominoController
         }
     }
 
-    public abstract bool Move(Vector3Int direction);
+    public bool IsValidPosition(Transform tetromino)
+    {
+        foreach (Transform block in tetromino)
+        {
+            int roundedX = Mathf.RoundToInt(block.transform.position.x);
+            int roundedY = Mathf.RoundToInt(block.transform.position.y);
+            Vector2Int position = new Vector2Int(roundedX, roundedY);
+            bool isBlockOnBoard = _bounds.Contains(position);
 
-    public abstract void Rotate(Vector3Int eulerAngles);
+            if (!IsPositionFree(roundedX, roundedY, isBlockOnBoard, _grid))
+            {
+                return false;
+            }
+        }
 
-    public abstract bool IsValidPosition(Transform tetromino);
-
-    public abstract void AddToGrid(Transform[,] grid);
+        return true;
+    }
 
     public void HardDrop()
     {
@@ -89,4 +103,12 @@ public abstract class TetrominoController
             continue;
         }
     }
+
+    public abstract bool Move(Vector3Int direction);
+
+    public abstract void Rotate(Vector3Int eulerAngles);
+
+    public abstract bool IsPositionFree(int x, int y, bool isBlockOnBoard, Transform[,] grid);
+
+    public abstract void AddToGrid(Transform[,] grid);
 }
